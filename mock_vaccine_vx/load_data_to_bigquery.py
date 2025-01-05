@@ -7,11 +7,7 @@ from google.oauth2 import service_account
 
 DATA_FOLDER = "data"
 
-# ตัวอย่างการกำหนด Path ของ Keyfile ในแบบที่ใช้ Environment Variable มาช่วย
-# จะทำให้เราไม่ต้อง Hardcode Path ของไฟล์ไว้ในโค้ดของเรา
-# keyfile = os.environ.get("KEYFILE_PATH")
-
-keyfile = "/workspaces/mock_vaccine_vx/mock_vaccine_vx/cred/load-data-to-bigquery.json" # แก้ไขชื่อ keyfile ให้ถูกต้อง
+keyfile = "/workspaces/mock_vaccine_vx/mock_vaccine_vx/cred/load-data-to-bigquery.json"
 service_account_info = json.load(open(keyfile))
 credentials = service_account.Credentials.from_service_account_info(service_account_info)
 project_id = "sidata-test" # แก้ไข project_id ให้สอดคล้องกับ GCP project ของตัวเอง
@@ -21,7 +17,7 @@ client = bigquery.Client(
     credentials=credentials,
 )
 
-# กำหนด schema สำหรับแต่ละตารางโดยละเอียด
+# กำหนด schema สำหรับแต่ละตาราง
 schemas = {
     "vaccination": [
         bigquery.SchemaField("vaccination_id", "STRING"),
@@ -57,17 +53,16 @@ schemas = {
     ],
 }
 
-# โหลดข้อมูลโดยปิดการตรวจจับอัตโนมัติและใช้ schema ที่กำหนด
 data_list = ["employee", "location", "person", "vaccination", "vaccine"]
 for data in data_list:
-    # ดึง schema จาก dictionary โดยตรง
+    # ดึง schema จาก dictionary 
     schema = schemas[data]
 
     job_config = bigquery.LoadJobConfig(
         skip_leading_rows=1,
         write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
         source_format=bigquery.SourceFormat.CSV,
-        autodetect=False,  # ปิดการตรวจจับอัตโนมัติ
+        autodetect=False,  
         schema=schema,  # ใช้ schema ที่ดึงจาก dictionary
     )
 
