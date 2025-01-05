@@ -1,0 +1,16 @@
+-- normalized_person.sqlx
+config {
+  type: "view",
+  schema: "mock_vaccine_vx_refined",
+  name: "normalized_person"
+}
+
+SELECT
+  person_id,
+  first_name AS person_first_name,
+  last_name AS person_last_name,
+  province AS residence_province,
+  sex AS gender,
+  date_of_birth
+FROM
+  ${ref("person")}

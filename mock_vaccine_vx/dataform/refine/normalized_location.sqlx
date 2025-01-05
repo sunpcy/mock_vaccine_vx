@@ -1,0 +1,16 @@
+-- normalized_location.sqlx
+config {
+  type: "view",
+  schema: "mock_vaccine_vx_refined",
+  name: "normalized_location"
+}
+
+SELECT
+  location_id,
+  location_name,
+  `Province` AS vaccination_province,
+  longitude,
+  latitude,
+  CONCAT(CAST(latitude AS STRING), ',', CAST(longitude AS STRING)) AS location_coordinates
+FROM
+  ${ref("location")}

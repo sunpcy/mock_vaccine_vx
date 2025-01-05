@@ -1,0 +1,82 @@
+-- vaccination_overview.sqlx
+config {
+  type: "view",
+  schema: "mock_vaccine_vx_fact",
+  name: "vaccination_overview"
+}
+
+WITH max_vaccine_year AS (
+  SELECT EXTRACT(YEAR FROM MAX(vaccine_date)) AS max_year
+  FROM ${ref("vaccination")}
+),
+
+total_population AS (
+    SELECT COUNT(DISTINCT person_id) AS total_people
+  FROM ${ref("cleaned_person")}
+),
+
+vaccine_rounds AS (
+    SELECT
+    person_id,
+    COUNT(vaccine_date) AS vaccine_round,
+  FROM ${ref("vaccination")}
+  GROUP BY person_id
+),
+
+vaccine_shots AS (
+    SELECT
+    person_id,
+    vaccine_date,
+    ROW_NUMBER() OVER (PARTITION BY person_id ORDER BY vaccine_date) AS vaccine_shot,
+  FROM ${ref("vaccination")}
+),
+
+vaccination_overview AS (
+  SELECT
+    p.person_id,
+    e.employee_id,
+    e.employee_department,
+    p.gender,
+    p.residence_province,
+    l.location_name,
+    l.vaccination_province,
+    l.location_coordinates,
+    DATE_DIFF(DATE(CONCAT(m.max_year, '-01-01')), p.date_of_birth, YEAR) AS age,
+    v.vaccine_date,
+    IF(v.person_id IS NOT NULL, 'Vaccinated', 'Not Vaccinated') AS vaccination_status,
+    IF(v.person_id IS NOT NULL, 1, 0) AS vaccination_status_num,
+    COALESCE(vr.vaccine_round, 0) AS vaccine_round,
+    COALESCE(vs.vaccine_shot, 0) AS vaccine_shot,
+    vc.vaccine_name,
+    vc.vaccine_price,
+    tp.total_people
+  FROM ${ref("cleaned_person")} AS p
+  LEFT JOIN ${ref("vaccination")} AS v ON p.person_id = v.person_id
+  LEFT JOIN ${ref("normalized_location")} AS l ON v.location_id = l.location_id
+  LEFT JOIN ${ref("employee")} AS e ON e.person_id = p.person_id
+  LEFT JOIN vaccine_rounds AS vr ON v.person_id = vr.person_id
+  LEFT JOIN vaccine_shots AS vs ON v.person_id = vs.person_id AND v.vaccine_date = vs.vaccine_date
+  LEFT JOIN ${ref("normalized_vaccine")} AS vc ON vc.vaccine_id = v.vaccine_id
+  CROSS JOIN max_vaccine_year AS m
+  CROSS JOIN total_population AS tp
+)
+
+SELECT
+  person_id,
+  employee_id,
+  employee_department,
+  gender,
+  age,
+  residence_province,
+  vaccination_province,
+  location_name,
+  location_coordinates,
+  vaccination_status,
+  vaccination_status_num,
+  vaccine_date,
+  vaccine_round,
+  vaccine_shot,
+  vaccine_name,
+  vaccine_price,
+  total_people
+FROM vaccination_overview

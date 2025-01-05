@@ -1,0 +1,24 @@
+-- cleaned_person.sqlx
+config {
+  type: "view",
+  schema: "mock_vaccine_vx_refined",
+  name: "cleaned_person"
+}
+
+SELECT
+  person_id,
+  person_first_name,
+  person_last_name,
+  gender,
+  PARSE_DATE('%d/%m/%Y', date_of_birth) AS date_of_birth,
+  CASE
+    WHEN residence_province IN ('Bangkok', 'กทม.', 'กรุงเทพ', 'กรุงเทพมหานคร', 'Bangkok Noi') THEN 'Bangkok'
+    WHEN residence_province IN ('Nonthaburi') THEN 'Nonthaburi'
+    WHEN residence_province IN ('Pathum Thani') THEN 'Pathum Thani'
+    WHEN residence_province IN ('Samut Prakan') THEN 'Samut Prakan'
+    WHEN residence_province IN ('Samut Sakhon') THEN 'Samut Sakhon'
+    WHEN residence_province IN ('Nakhon Pathom', 'Nakohn Pathom') THEN 'Nakhon Pathom'
+    ELSE residence_province
+  END AS residence_province
+FROM
+  ${ref("normalized_person")}

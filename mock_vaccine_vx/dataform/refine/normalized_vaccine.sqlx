@@ -1,0 +1,13 @@
+-- normalized_vaccine.sqlx
+config {
+  type: "view",
+  schema: "mock_vaccine_vx_refined",
+  name: "normalized_vaccine"
+}
+
+SELECT
+  vaccine_id,
+  vaccine_name,
+  price AS vaccine_price
+FROM
+  ${ref("vaccine")}
