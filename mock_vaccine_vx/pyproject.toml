@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "mock-vaccine-vx"
+version = "0.1.0"
+description = ""
+authors = ["Prachya Kusumamarn <91284127+sunpcy@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pandas = "^2.2.3"
+openpyxl = "^3.1.5"
+requests = "^2.32.3"
+pysftp = "^0.2.9"
+psycopg2 = "^2.9.9"
+google-cloud-bigquery = "^3.25.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
